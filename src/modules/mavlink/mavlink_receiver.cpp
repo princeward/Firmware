@@ -1206,7 +1206,8 @@ MavlinkReceiver::handle_message_vision_position_estimate(mavlink_message_t *msg)
 	// Use the estimator type to identify the simple vision estimate
 	vision_position.estimator_type = MAV_ESTIMATOR_TYPE_VISION;
 
-	vision_position.timestamp = sync_stamp(pos.usec);
+	vision_position.timestamp = hrt_absolute_time(); //sync_stamp(pos.usec);
+	vision_position.timestamp_received = hrt_absolute_time();
 	vision_position.x = pos.x;
 	vision_position.y = pos.y;
 	vision_position.z = pos.z;
