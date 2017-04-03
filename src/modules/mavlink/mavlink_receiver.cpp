@@ -1014,7 +1014,7 @@ MavlinkReceiver::handle_message_vision_position_estimate(mavlink_message_t *msg)
 	// Use the component ID to identify the vision sensor
 	vision_position.id = msg->compid;
 
-	vision_position.timestamp = sync_stamp(pos.usec);
+	vision_position.timestamp = hrt_absolute_time(); //sync_stamp(pos.usec);
 	vision_position.timestamp_received = hrt_absolute_time();
 	vision_position.x = pos.x;
 	vision_position.y = pos.y;
