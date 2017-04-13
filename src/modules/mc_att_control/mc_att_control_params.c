@@ -92,7 +92,7 @@ PARAM_DEFINE_FLOAT(MC_ROLL_P, 6.5f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 0.15f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 0.1f);
 
 /**
  * Roll rate I gain
@@ -104,7 +104,7 @@ PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 0.15f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_I, 0.05f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_I, 0.0f);
 
 /**
  * Roll rate integrator limit
@@ -129,7 +129,7 @@ PARAM_DEFINE_FLOAT(MC_RR_INT_LIM, 0.30f);
  * @increment 0.0005
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_D, 0.003f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_D, 0.00f);
 
 /**
  * Roll rate feedforward
@@ -167,7 +167,7 @@ PARAM_DEFINE_FLOAT(MC_PITCH_P, 6.5f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 0.15f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 0.1f);
 
 /**
  * Pitch rate I gain
@@ -179,7 +179,7 @@ PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 0.15f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_I, 0.05f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_I, 0.0f);
 
 /**
  * Pitch rate integrator limit
@@ -203,7 +203,7 @@ PARAM_DEFINE_FLOAT(MC_PR_INT_LIM, 0.30f);
  * @increment 0.0005
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_D, 0.003f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_D, 0.00f);
 
 /**
  * Pitch rate feedforward
@@ -241,7 +241,7 @@ PARAM_DEFINE_FLOAT(MC_YAW_P, 2.8f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_YAWRATE_P, 0.2f);
+PARAM_DEFINE_FLOAT(MC_YAWRATE_P, 0.05f);
 
 /**
  * Yaw rate I gain
@@ -253,7 +253,7 @@ PARAM_DEFINE_FLOAT(MC_YAWRATE_P, 0.2f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_YAWRATE_I, 0.1f);
+PARAM_DEFINE_FLOAT(MC_YAWRATE_I, 0.00f);
 
 /**
  * Yaw rate integrator limit
@@ -277,7 +277,7 @@ PARAM_DEFINE_FLOAT(MC_YR_INT_LIM, 0.30f);
  * @increment 0.01
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_YAWRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(MC_YAWRATE_D, 0.00f);
 
 /**
  * Yaw rate feedforward

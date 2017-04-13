@@ -3886,6 +3886,7 @@ set_control_mode()
 		 * The control flags depend on what is ignored according to the offboard control mode topic
 		 * Inner loop flags (e.g. attitude) also depend on outer loop ignore flags (e.g. position)
 		 */
+		 /*
 		control_mode.flag_control_rates_enabled = !offboard_control_mode.ignore_bodyrate ||
 			!offboard_control_mode.ignore_attitude ||
 			!offboard_control_mode.ignore_position ||
@@ -3896,6 +3897,9 @@ set_control_mode()
 			!offboard_control_mode.ignore_position ||
 			!offboard_control_mode.ignore_velocity ||
 			!offboard_control_mode.ignore_acceleration_force;
+			*/
+			control_mode.flag_control_rates_enabled = true;
+			control_mode.flag_control_attitude_enabled = false;
 
 		control_mode.flag_control_rattitude_enabled = false;
 
