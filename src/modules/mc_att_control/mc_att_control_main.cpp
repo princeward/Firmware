@@ -192,6 +192,8 @@ private:
 	math::Vector<3>		_rates_int;		/**< angular rates integral error */
 	float				_thrust_sp;		/**< thrust setpoint */
 	math::Vector<3>		_att_control;	/**< attitude control vector */
+	float							_z_accel_int;
+	float							_z_accel_err_prev;
 
 	math::Matrix<3, 3>  _I;				/**< identity matrix */
 
@@ -335,6 +337,11 @@ private:
 	 */
 	math::Vector<3> pid_attenuations(float tpa_breakpoint, float tpa_rate);
 
+	 /**
+	 * Thrust controller.
+	 */
+	void		control_thrust(float dt);
+
 	/**
 	 * Check for vehicle status updates.
 	 */
@@ -464,6 +471,8 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_rates_int.zero();
 	_thrust_sp = 0.0f;
 	_att_control.zero();
+	_z_accel_int = 0.0f;
+	_z_accel_err_prev = 0.0f;
 
 	_I.identity();
 	_board_rotation.identity();
@@ -1074,6 +1083,24 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 }
 
 void
+MulticopterAttitudeControl::control_thrust(float dt)
+{
+	float z_accel_sp = (_v_rates_sp.thrust / 0.56f) * 9.81f;
+	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
+
+	_thrust_sp = 0.002f * z_accel_err + 0.1f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * 0.56f;
+
+	_z_accel_err_prev = z_accel_err;
+
+	if (_thrust_sp > MIN_TAKEOFF_THRUST && !_motor_limits.lower_limit && !_motor_limits.upper_limit) {
+		float z_accel_i = _z_accel_int + 2.0f * z_accel_err * dt;
+		if (PX4_ISFINITE(z_accel_i) && z_accel_i > -1.0f && z_accel_i < 1.0f) {
+			_z_accel_int = z_accel_i;
+		}
+	}
+}
+
+void
 MulticopterAttitudeControl::task_main_trampoline(int argc, char *argv[])
 {
 	mc_att_control::g_control->task_main();
@@ -1241,7 +1268,11 @@ MulticopterAttitudeControl::task_main()
 					_rates_sp(0) = _v_rates_sp.roll;
 					_rates_sp(1) = _v_rates_sp.pitch;
 					_rates_sp(2) = _v_rates_sp.yaw;
-					_thrust_sp = _v_rates_sp.thrust;
+					if (_v_control_mode.flag_control_offboard_enabled) {
+						control_thrust(dt);
+					} else {
+						_thrust_sp = _v_rates_sp.thrust;
+					}
 				}
 			}
 
