@@ -61,6 +61,7 @@
 #include <uORB/topics/att_pos_mocap.h>
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/camera_trigger.h>
+#include <uORB/topics/control_state.h>
 #include <uORB/topics/cpuload.h>
 #include <uORB/topics/debug_key_value.h>
 #include <uORB/topics/differential_pressure.h>
@@ -710,6 +711,9 @@ private:
 	MavlinkOrbSubscription *_differential_pressure_sub;
 	uint64_t _differential_pressure_time;
 
+	MavlinkOrbSubscription *_control_state_sub;
+	uint64_t _ctrl_state_time;
+
 	uint64_t _accel_timestamp;
 	uint64_t _gyro_timestamp;
 	uint64_t _mag_timestamp;
@@ -725,6 +729,8 @@ protected:
 		_sensor_time(0),
 		_differential_pressure_sub(_mavlink->add_orb_subscription(ORB_ID(differential_pressure))),
 		_differential_pressure_time(0),
+		_control_state_sub(_mavlink->add_orb_subscription(ORB_ID(control_state))),
+		_ctrl_state_time(0),
 		_accel_timestamp(0),
 		_gyro_timestamp(0),
 		_mag_timestamp(0),
@@ -735,6 +741,7 @@ protected:
 	{
 		struct sensor_combined_s sensor;
 		struct differential_pressure_s differential_pressure;
+		struct control_state_s ctrl_state;
 
 		if (_sensor_sub->update(&_sensor_time, &sensor)) {
 			uint16_t fields_updated = 0;
@@ -765,12 +772,14 @@ protected:
 
 			_differential_pressure_sub->update(&_differential_pressure_time, &differential_pressure);
 
+			_control_state_sub->update(&_ctrl_state_time, &ctrl_state);
+
 			mavlink_highres_imu_t msg;
 
 			msg.time_usec = sensor.timestamp;
-			msg.xacc = sensor.accelerometer_m_s2[0];
-			msg.yacc = sensor.accelerometer_m_s2[1];
-			msg.zacc = sensor.accelerometer_m_s2[2];
+			msg.xacc = ctrl_state.x_acc;
+			msg.yacc = ctrl_state.y_acc;
+			msg.zacc = ctrl_state.z_acc;
 			msg.xgyro = sensor.gyro_rad[0];
 			msg.ygyro = sensor.gyro_rad[1];
 			msg.zgyro = sensor.gyro_rad[2];
