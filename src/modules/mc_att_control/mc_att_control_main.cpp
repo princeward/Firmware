@@ -216,6 +216,12 @@ private:
 
 		param_t bat_scale_en;
 
+		param_t hover_thrust;
+		param_t thrust_p_gain;
+		param_t thrust_i_gain;
+		param_t thrust_d_gain;
+		param_t thrust_i_max;
+
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -242,6 +248,12 @@ private:
 		float vtol_wv_yaw_rate_scale;			/**< Scale value [0, 1] for yaw rate setpoint  */
 
 		int bat_scale_en;
+
+		float hover_thrust;
+		float thrust_p_gain;
+		float thrust_i_gain;
+		float thrust_d_gain;
+		float thrust_i_max;
 	}		_params;
 
 	TailsitterRecovery *_ts_opt_recovery;	/**< Computes optimal rates for tailsitter recovery */
@@ -429,7 +441,11 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.vtol_opt_recovery_enabled	= param_find("VT_OPT_RECOV_EN");
 	_params_handles.vtol_wv_yaw_rate_scale		= param_find("VT_WV_YAWR_SCL");
 	_params_handles.bat_scale_en		= param_find("MC_BAT_SCALE_EN");
-
+	_params_handles.hover_thrust = param_find("MC_HOVER_THRUST");
+	_params_handles.thrust_p_gain = param_find("MC_THRUST_P_GAIN");
+	_params_handles.thrust_i_gain = param_find("MC_THRUST_I_GAIN");
+	_params_handles.thrust_d_gain = param_find("MC_THRUST_D_GAIN");
+	_params_handles.thrust_i_max = param_find("MC_THRUST_I_MAX");
 
 
 	/* fetch initial parameter values */
@@ -560,6 +576,12 @@ MulticopterAttitudeControl::parameters_update()
 	param_get(_params_handles.vtol_wv_yaw_rate_scale, &_params.vtol_wv_yaw_rate_scale);
 
 	param_get(_params_handles.bat_scale_en, &_params.bat_scale_en);
+
+	param_get(_params_handles.hover_thrust, &_params.hover_thrust);
+	param_get(_params_handles.thrust_p_gain, &_params.thrust_p_gain);
+	param_get(_params_handles.thrust_i_gain, &_params.thrust_i_gain);
+	param_get(_params_handles.thrust_d_gain, &_params.thrust_d_gain);
+	param_get(_params_handles.thrust_i_max, &_params.thrust_i_max);
 
 	_actuators_0_circuit_breaker_enabled = circuit_breaker_enabled("CBRK_RATE_CTRL", CBRK_RATE_CTRL_KEY);
 
@@ -850,16 +872,16 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 void
 MulticopterAttitudeControl::control_thrust(float dt)
 {
-	float z_accel_sp = (_v_rates_sp.thrust / 0.56f) * 9.81f;
+	float z_accel_sp = (_v_rates_sp.thrust / _params.hover_thrust) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = 0.002f * z_accel_err + 0.1f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * 0.56f;
+	_thrust_sp = _params.thrust_p_gain * z_accel_err + _params.thrust_i_gain * _z_accel_int + _params.thrust_d_gain * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.hover_thrust;
 
 	_z_accel_err_prev = z_accel_err;
 
 	if (_thrust_sp > MIN_TAKEOFF_THRUST && !_motor_limits.lower_limit && !_motor_limits.upper_limit) {
-		float z_accel_i = _z_accel_int + 2.0f * z_accel_err * dt;
-		if (PX4_ISFINITE(z_accel_i) && z_accel_i > -1.0f && z_accel_i < 1.0f) {
+		float z_accel_i = _z_accel_int + z_accel_err * dt;
+		if (PX4_ISFINITE(z_accel_i) && z_accel_i > -_params.thrust_i_max && z_accel_i < _params.thrust_i_max) {
 			_z_accel_int = z_accel_i;
 		}
 	}

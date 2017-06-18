@@ -418,3 +418,48 @@ PARAM_DEFINE_FLOAT(MC_TPA_SLOPE, 1.0f);
  * @group Multicopter Attitude Control
  */
 PARAM_DEFINE_INT32(MC_BAT_SCALE_EN, 0);
+
+/**
+ * Thrust control hover thrust
+ *
+ * @min 0.0
+ * @max 1.0
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_HOVER_THRUST, 0.56f);
+
+/**
+ * Thrust control P gain
+ *
+ * @min 0.0
+ * @max 10.0
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_THRUST_P_GAIN, 0.002f);
+
+/**
+ * Thrust control I gain
+ *
+ * @min 0.0
+ * @max 10.0
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_THRUST_I_GAIN, 0.2f);
+
+/**
+ * Thrust control D gain
+ *
+ * @min 0.0
+ * @max 10.0
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_THRUST_D_GAIN, 0.00001f);
+
+/**
+ * Thrust control I term saturation limit
+ *
+ * @min 0.0
+ * @max 10.0
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_THRUST_I_MAX, 1.0f);
