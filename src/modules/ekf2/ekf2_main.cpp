@@ -686,7 +686,7 @@ void Ekf2::task_main()
 				// data and push the average when the specified interval is reached.
 				_balt_time_sum_ms += _timestamp_balt_us / 1000;
 				_balt_sample_count++;
-				_balt_data_sum += -ev.z; //sensors.baro_alt_meter;
+				_balt_data_sum += -ev_pos.z; //sensors.baro_alt_meter;
 				uint32_t balt_time_ms = _balt_time_sum_ms / _balt_sample_count;
 
 				if (balt_time_ms - _balt_time_ms_last_used > (uint32_t)_params->sensor_interval_min_ms) {

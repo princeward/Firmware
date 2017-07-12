@@ -1088,12 +1088,12 @@ MulticopterAttitudeControl::control_thrust(float dt)
 	float z_accel_sp = (_v_rates_sp.thrust / 0.56f) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = 0.002f * z_accel_err + 0.1f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * 0.56f;
+	_thrust_sp = 0.002f * z_accel_err + 0.2f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * 0.56f;
 
 	_z_accel_err_prev = z_accel_err;
 
-	if (_thrust_sp > MIN_TAKEOFF_THRUST && !_motor_limits.lower_limit && !_motor_limits.upper_limit) {
-		float z_accel_i = _z_accel_int + 2.0f * z_accel_err * dt;
+	if (_thrust_sp > MIN_TAKEOFF_THRUST && !_motor_limits.saturation_status) {
+		float z_accel_i = _z_accel_int + z_accel_err * dt;
 		if (PX4_ISFINITE(z_accel_i) && z_accel_i > -1.0f && z_accel_i < 1.0f) {
 			_z_accel_int = z_accel_i;
 		}
