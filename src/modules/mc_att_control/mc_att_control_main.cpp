@@ -247,6 +247,8 @@ private:
 
 		param_t board_offset[3];
 
+		param_t thr_hover;
+
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -282,6 +284,8 @@ private:
 		int board_rotation;
 
 		float board_offset[3];
+
+		float thr_hover;
 
 	}		_params;
 
@@ -465,6 +469,8 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params.board_offset[1] = 0.0f;
 	_params.board_offset[2] = 0.0f;
 
+	_params.thr_hover = 0.5f;
+
 	_rates_prev.zero();
 	_rates_sp.zero();
 	_rates_sp_prev.zero();
@@ -525,7 +531,8 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.board_offset[1] = param_find("SENS_BOARD_Y_OFF");
 	_params_handles.board_offset[2] = param_find("SENS_BOARD_Z_OFF");
 
-
+	/* hover throttle */
+	_params_handles.thr_hover = param_find("MPC_THR_HOVER");
 
 	/* fetch initial parameter values */
 	parameters_update();
@@ -680,6 +687,8 @@ MulticopterAttitudeControl::parameters_update()
 	param_get(_params_handles.board_offset[0], &(_params.board_offset[0]));
 	param_get(_params_handles.board_offset[1], &(_params.board_offset[1]));
 	param_get(_params_handles.board_offset[2], &(_params.board_offset[2]));
+
+	param_get(_params_handles.thr_hover, &(_params.thr_hover));
 
 	return OK;
 }
@@ -1085,10 +1094,10 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 void
 MulticopterAttitudeControl::control_thrust(float dt)
 {
-	float z_accel_sp = (_v_rates_sp.thrust / 0.56f) * 9.81f;
+	float z_accel_sp = (_v_rates_sp.thrust / 0.5f) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = 0.002f * z_accel_err + 0.2f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * 0.56f;
+	_thrust_sp = 0.002f * z_accel_err + 0.2f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
 
 	_z_accel_err_prev = z_accel_err;
 
