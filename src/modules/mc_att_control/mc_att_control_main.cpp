@@ -659,11 +659,11 @@ MulticopterAttitudeControl::parameters_update()
 
 	/* manual rate control scale and auto mode roll/pitch rate limits */
 	param_get(_params_handles.acro_roll_max, &v);
-	_params.acro_rate_max(0) = math::radians(v);
+	_params.acro_rate_max(0) = v; //math::radians(v);
 	param_get(_params_handles.acro_pitch_max, &v);
-	_params.acro_rate_max(1) = math::radians(v);
+	_params.acro_rate_max(1) = v; //math::radians(v);
 	param_get(_params_handles.acro_yaw_max, &v);
-	_params.acro_rate_max(2) = math::radians(v);
+	_params.acro_rate_max(2) = v; //math::radians(v);
 
 	/* stick deflection needed in rattitude mode to control rates not angles */
 	param_get(_params_handles.rattitude_thres, &_params.rattitude_thres);
@@ -1097,7 +1097,7 @@ MulticopterAttitudeControl::control_thrust(float dt)
 	float z_accel_sp = (_v_rates_sp.thrust / 0.5f) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = 0.002f * z_accel_err + 0.2f * _z_accel_int + 0.00001f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
+	_thrust_sp = _params.acro_rate_max(0) * z_accel_err + _params.acro_rate_max(1) * _z_accel_int + _params.acro_rate_max(2) * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
 
 	_z_accel_err_prev = z_accel_err;
 
@@ -1250,28 +1250,28 @@ MulticopterAttitudeControl::task_main()
 				//}
 
 			} else {
-				/* attitude controller disabled, poll rates setpoint topic */
-				if (_v_control_mode.flag_control_manual_enabled) {
-					/* manual rates control - ACRO mode */
-					_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x,
-								    _manual_control_sp.r).emult(_params.acro_rate_max);
-					_thrust_sp = math::min(_manual_control_sp.z, MANUAL_THROTTLE_MAX_MULTICOPTER);
-
-					/* publish attitude rates setpoint */
-					_v_rates_sp.roll = _rates_sp(0);
-					_v_rates_sp.pitch = _rates_sp(1);
-					_v_rates_sp.yaw = _rates_sp(2);
-					_v_rates_sp.thrust = _thrust_sp;
-					_v_rates_sp.timestamp = hrt_absolute_time();
-
-					if (_v_rates_sp_pub != nullptr) {
-						orb_publish(_rates_sp_id, _v_rates_sp_pub, &_v_rates_sp);
-
-					} else if (_rates_sp_id) {
-						_v_rates_sp_pub = orb_advertise(_rates_sp_id, &_v_rates_sp);
-					}
-
-				} else {
+				// /* attitude controller disabled, poll rates setpoint topic */
+				// if (_v_control_mode.flag_control_manual_enabled) {
+				// 	/* manual rates control - ACRO mode */
+				// 	_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x,
+				// 				    _manual_control_sp.r).emult(_params.acro_rate_max);
+				// 	_thrust_sp = math::min(_manual_control_sp.z, MANUAL_THROTTLE_MAX_MULTICOPTER);
+				//
+				// 	/* publish attitude rates setpoint */
+				// 	_v_rates_sp.roll = _rates_sp(0);
+				// 	_v_rates_sp.pitch = _rates_sp(1);
+				// 	_v_rates_sp.yaw = _rates_sp(2);
+				// 	_v_rates_sp.thrust = _thrust_sp;
+				// 	_v_rates_sp.timestamp = hrt_absolute_time();
+				//
+				// 	if (_v_rates_sp_pub != nullptr) {
+				// 		orb_publish(_rates_sp_id, _v_rates_sp_pub, &_v_rates_sp);
+				//
+				// 	} else if (_rates_sp_id) {
+				// 		_v_rates_sp_pub = orb_advertise(_rates_sp_id, &_v_rates_sp);
+				// 	}
+				//
+				// } else {
 					/* attitude controller disabled, poll rates setpoint topic */
 					vehicle_rates_setpoint_poll();
 					_rates_sp(0) = _v_rates_sp.roll;
@@ -1282,7 +1282,7 @@ MulticopterAttitudeControl::task_main()
 					} else {
 						_thrust_sp = _v_rates_sp.thrust;
 					}
-				}
+				// }
 			}
 
 			if (_v_control_mode.flag_control_rates_enabled) {

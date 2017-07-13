@@ -44,6 +44,13 @@ param set SENS_BOARD_X_OFF 0.000001
 param set SYS_AUTOSTART 4010
 param set SYS_MC_EST_GROUP 2
 param set SYS_RESTART_TYPE 2
+
+# this is actually the thrust controller PID gains (in that order)
+param set MC_ACRO_R_MAX 0.002
+param set MC_ACRO_P_MAX 0.2
+param set MC_ACRO_Y_MAX 0.00001
+param set MPC_THR_HOVER 0.5
+
 replay tryapplyparams
 simulator start -s
 tone_alarm start
