@@ -195,6 +195,8 @@ private:
 	float							_z_accel_int;
 	float							_z_accel_err_prev;
 
+	bool prev_offboard;
+
 	math::Matrix<3, 3>  _I;				/**< identity matrix */
 
 	math::Matrix<3, 3>	_board_rotation = {};	/**< rotation matrix for the orientation that the board is mounted */
@@ -479,6 +481,8 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_att_control.zero();
 	_z_accel_int = 0.0f;
 	_z_accel_err_prev = 0.0f;
+
+	prev_offboard = false;
 
 	_I.identity();
 	_board_rotation.identity();
@@ -1152,6 +1156,8 @@ MulticopterAttitudeControl::task_main()
 	px4_pollfd_struct_t poll_fds = {};
 	poll_fds.events = POLLIN;
 
+	double yaw_off = 0.0;
+
 	while (!_task_should_exit) {
 
 		poll_fds.fd = _sensor_gyro_sub[_selected_gyro];
@@ -1273,10 +1279,37 @@ MulticopterAttitudeControl::task_main()
 				//
 				// } else {
 					/* attitude controller disabled, poll rates setpoint topic */
+
+					if (!prev_offboard){
+						prev_offboard = true;
+						math::Quaternion q(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
+						math::Vector<3> euler = q.to_euler();
+						yaw_off = euler(2);
+					}
 					vehicle_rates_setpoint_poll();
-					_rates_sp(0) = _v_rates_sp.roll;
+
+
+					math::Quaternion q(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
+					math::Quaternion q_z(cosf(-yaw_off/2.0), 0, 0, sinf(-yaw_off/2.0));
+
+					math::Matrix<3, 3> R_q = q.to_dcm(); //rotation Matrix
+					math::Matrix<3, 3> R_z = q_z.to_dcm();
+
+					math::Matrix<3, 3> R = R_z*R_q;
+
+					float pitch_123 = asinf(R(0,2));
+					float yaw_123 = atan2f(-R(0,1),R(0,0));
+
+					_rates_sp(0) =  _v_rates_sp.pitch*sinf(yaw_123) + _v_rates_sp.roll*cosf(pitch_123)*cosf(yaw_123);
+					_rates_sp(1) =  _v_rates_sp.pitch*cosf(yaw_123) - _v_rates_sp.roll*cosf(pitch_123)*sinf(yaw_123);
+					_rates_sp(2) =  _v_rates_sp.yaw + _v_rates_sp.roll*sinf(pitch_123);
+
+					/*
+				  _rates_sp(0) = _v_rates_sp.roll;
 					_rates_sp(1) = _v_rates_sp.pitch;
 					_rates_sp(2) = _v_rates_sp.yaw;
+					*/
+
 					if (_v_control_mode.flag_control_offboard_enabled) {
 						control_thrust(dt);
 					} else {
