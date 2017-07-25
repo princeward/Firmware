@@ -1279,7 +1279,6 @@ MulticopterAttitudeControl::task_main()
 					if (_v_control_mode.flag_control_offboard_enabled) {
 
 						// Getting euler rates in - convert:
-
 						math::Quaternion q(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
 
 						math::Matrix<3, 3> R = q.to_dcm(); //rotation Matrix
