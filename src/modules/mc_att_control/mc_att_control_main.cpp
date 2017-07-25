@@ -1152,8 +1152,6 @@ MulticopterAttitudeControl::task_main()
 	px4_pollfd_struct_t poll_fds = {};
 	poll_fds.events = POLLIN;
 
-	double yaw_off = 0.0;
-
 	while (!_task_should_exit) {
 
 		poll_fds.fd = _sensor_gyro_sub[_selected_gyro];
@@ -1283,12 +1281,8 @@ MulticopterAttitudeControl::task_main()
 						// Getting euler rates in - convert:
 
 						math::Quaternion q(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
-						math::Quaternion q_z(cosf(M_PI/2.0), 0, 0, sinf(M_PI/2.0));
 
-						math::Matrix<3, 3> R_q = q.to_dcm(); //rotation Matrix
-						math::Matrix<3, 3> R_z = q_z.to_dcm();
-
-						math::Matrix<3, 3> R = R_z*R_q;
+						math::Matrix<3, 3> R = q.to_dcm(); //rotation Matrix
 
 						float pitch_123 = asinf(R(0,2));
 						float yaw_123 = atan2f(-R(0,1),R(0,0));
@@ -1296,6 +1290,10 @@ MulticopterAttitudeControl::task_main()
 						_rates_sp(0) =  _v_rates_sp.pitch*sinf(yaw_123) + _v_rates_sp.roll*cosf(pitch_123)*cosf(yaw_123);
 						_rates_sp(1) =  _v_rates_sp.pitch*cosf(yaw_123) - _v_rates_sp.roll*cosf(pitch_123)*sinf(yaw_123);
 						_rates_sp(2) =  _v_rates_sp.yaw + _v_rates_sp.roll*sinf(pitch_123);
+
+						// _rates_sp(0) = _v_rates_sp.roll;
+						// _rates_sp(1) = _v_rates_sp.pitch;
+						// _rates_sp(2) = _v_rates_sp.yaw;
 
 						// Thrust controller
 						control_thrust(dt);
