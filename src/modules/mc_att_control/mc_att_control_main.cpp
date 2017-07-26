@@ -1097,7 +1097,7 @@ MulticopterAttitudeControl::control_thrust(float dt)
 	float z_accel_sp = (_v_rates_sp.thrust / 0.5f) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = _params.acro_rate_max(0) * z_accel_err + _params.acro_rate_max(1) * _z_accel_int + _params.acro_rate_max(2) * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
+	_thrust_sp = 2.0f*_params.acro_rate_max(0) * z_accel_err + 2.0f*_params.acro_rate_max(1) * _z_accel_int + 0.0f * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
 
 	_z_accel_err_prev = z_accel_err;
 
@@ -1286,13 +1286,20 @@ MulticopterAttitudeControl::task_main()
 						float pitch_123 = asinf(R(0,2));
 						float yaw_123 = atan2f(-R(0,1),R(0,0));
 
-						_rates_sp(0) =  _v_rates_sp.pitch*sinf(yaw_123) + _v_rates_sp.roll*cosf(pitch_123)*cosf(yaw_123);
-						_rates_sp(1) =  _v_rates_sp.pitch*cosf(yaw_123) - _v_rates_sp.roll*cosf(pitch_123)*sinf(yaw_123);
-						_rates_sp(2) =  _v_rates_sp.yaw + _v_rates_sp.roll*sinf(pitch_123);
+						float om_sp_x = _v_rates_sp.pitch*sinf(yaw_123) + _v_rates_sp.roll*cosf(pitch_123)*cosf(yaw_123);
+						float om_sp_y = _v_rates_sp.pitch*cosf(yaw_123) - _v_rates_sp.roll*cosf(pitch_123)*sinf(yaw_123);
+						float om_sp_z = _v_rates_sp.yaw + _v_rates_sp.roll*sinf(pitch_123);
 
-						// _rates_sp(0) = _v_rates_sp.roll;
-						// _rates_sp(1) = _v_rates_sp.pitch;
-						// _rates_sp(2) = _v_rates_sp.yaw;
+						// float pitch_321 = asinf(-R(2,0));
+						// float roll_321 = atan2f(R(2,1),R(2,2));
+						//
+						// _rates_sp(0) =  om_sp_x + (sinf(pitch_321)*sinf(roll_321)/cosf(pitch_321))*om_sp_y + (cosf(roll_321)*sinf(pitch_321)/cosf(pitch_321))*om_sp_z;
+						// _rates_sp(1) =  cosf(roll_321)*om_sp_y - sinf(roll_321)*om_sp_z;
+						// _rates_sp(2) =  (sinf(roll_321)/cosf(pitch_321))*om_sp_y + (cosf(roll_321)/cosf(pitch_321))*om_sp_z;
+
+						_rates_sp(0) = om_sp_x;
+						_rates_sp(1) = om_sp_y;
+						_rates_sp(2) = om_sp_z;
 
 						// Thrust controller
 						control_thrust(dt);
