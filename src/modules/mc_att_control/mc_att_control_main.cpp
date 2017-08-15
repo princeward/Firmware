@@ -1279,6 +1279,7 @@ MulticopterAttitudeControl::task_main()
 					if (_v_control_mode.flag_control_offboard_enabled) {
 
 						// Getting euler rates in - convert:
+		  			/*
 						math::Quaternion q(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
 
 						math::Matrix<3, 3> R = q.to_dcm(); //rotation Matrix
@@ -1290,16 +1291,14 @@ MulticopterAttitudeControl::task_main()
 						float om_sp_y = _v_rates_sp.pitch*cosf(yaw_123) - _v_rates_sp.roll*cosf(pitch_123)*sinf(yaw_123);
 						float om_sp_z = _v_rates_sp.yaw + _v_rates_sp.roll*sinf(pitch_123);
 
-						// float pitch_321 = asinf(-R(2,0));
-						// float roll_321 = atan2f(R(2,1),R(2,2));
-						//
-						// _rates_sp(0) =  om_sp_x + (sinf(pitch_321)*sinf(roll_321)/cosf(pitch_321))*om_sp_y + (cosf(roll_321)*sinf(pitch_321)/cosf(pitch_321))*om_sp_z;
-						// _rates_sp(1) =  cosf(roll_321)*om_sp_y - sinf(roll_321)*om_sp_z;
-						// _rates_sp(2) =  (sinf(roll_321)/cosf(pitch_321))*om_sp_y + (cosf(roll_321)/cosf(pitch_321))*om_sp_z;
-
 						_rates_sp(0) = om_sp_x;
 						_rates_sp(1) = om_sp_y;
 						_rates_sp(2) = om_sp_z;
+						*/
+
+						_rates_sp(0) = _v_rates_sp.roll;
+						_rates_sp(1) = _v_rates_sp.pitch;
+						_rates_sp(2) = _v_rates_sp.yaw;
 
 						// Thrust controller
 						control_thrust(dt);
