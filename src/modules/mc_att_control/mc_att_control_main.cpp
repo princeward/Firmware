@@ -1097,7 +1097,9 @@ MulticopterAttitudeControl::control_thrust(float dt)
 	float z_accel_sp = (_v_rates_sp.thrust / 0.5f) * 9.81f;
 	float z_accel_err = z_accel_sp + _ctrl_state.z_acc;
 
-	_thrust_sp = _params.acro_rate_max(0) * z_accel_err + _params.acro_rate_max(1) * _z_accel_int + _params.acro_rate_max(2) * (z_accel_err - _z_accel_err_prev) / dt + (z_accel_sp / 9.81f) * _params.thr_hover;
+	float throttle_ff = -0.00082f*(z_accel_sp*z_accel_sp) + 0.058f*z_accel_sp - 0.017f;
+	//_thrust_sp = _params.acro_rate_max(0) * z_accel_err + _params.acro_rate_max(1) * _z_accel_int + _params.acro_rate_max(2) * (z_accel_err - _z_accel_err_prev) / dt + throttle_ff;
+	_thrust_sp = throttle_ff;
 
 	_z_accel_err_prev = z_accel_err;
 
