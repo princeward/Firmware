@@ -194,6 +194,7 @@ private:
 	math::Vector<3>		_att_control;	/**< attitude control vector */
 	float							_z_accel_int;
 	float							_z_accel_err_prev;
+	bool was_offboard_enabled;
 
 	math::Matrix<3, 3>  _I;				/**< identity matrix */
 
@@ -479,6 +480,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_att_control.zero();
 	_z_accel_int = 0.0f;
 	_z_accel_err_prev = 0.0f;
+	was_offboard_enabled = false;
 
 	_I.identity();
 	_board_rotation.identity();
@@ -1152,6 +1154,9 @@ MulticopterAttitudeControl::task_main()
 	px4_pollfd_struct_t poll_fds = {};
 	poll_fds.events = POLLIN;
 
+	// initialize
+	float _thrust_sp_prev = _params.thr_hover;
+
 	while (!_task_should_exit) {
 
 		poll_fds.fd = _sensor_gyro_sub[_selected_gyro];
@@ -1313,6 +1318,11 @@ MulticopterAttitudeControl::task_main()
 				// }
 			}
 
+			if (!was_offboard_enabled && _v_control_mode.flag_control_offboard_enabled){
+				 was_offboard_enabled = true;
+				 _thrust_sp = _thrust_sp_prev;
+			}
+
 			if (_v_control_mode.flag_control_rates_enabled) {
 				control_attitude_rates(dt);
 
@@ -1331,6 +1341,8 @@ MulticopterAttitudeControl::task_main()
 						_actuators.control[i] *= _battery_status.scale;
 					}
 				}
+
+				_thrust_sp_prev = _actuators.control[3];
 
 				_controller_status.roll_rate_integ = _rates_int(0);
 				_controller_status.pitch_rate_integ = _rates_int(1);
