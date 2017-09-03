@@ -1343,7 +1343,7 @@ MulticopterAttitudeControl::task_main()
 				}
 
 				for (int i=0; i<4; i++) {
-					_actuators.control[i] /= 4.0;
+					_actuators.control[i] /= 4.0f;
 				}
 
 				_thrust_sp_prev = _actuators.control[3];
