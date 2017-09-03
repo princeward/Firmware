@@ -1342,6 +1342,10 @@ MulticopterAttitudeControl::task_main()
 					}
 				}
 
+				for (int i=0; i<4; i++) {
+					_actuators.control[i] /= 4.0;
+				}
+
 				_thrust_sp_prev = _actuators.control[3];
 
 				_controller_status.roll_rate_integ = _rates_int(0);
