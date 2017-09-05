@@ -38,6 +38,11 @@ px4_add_module(
 	COMPILE_FLAGS
 	SRCS
 		mc_att_control_main.cpp
+		ldl.c
+		matrix_support.c
+		solver.c
+		util.c
+		solver.h
 	DEPENDS
 		platforms__common
 	)

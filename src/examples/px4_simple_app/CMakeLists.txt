@@ -36,10 +36,6 @@ px4_add_module(
 	STACK_MAIN 2000
 	SRCS
 		px4_simple_app.c
-		ldl.c
-		matrix_support.c
-		solver.c
-		util.c
 	DEPENDS
 		platforms__common
 	)

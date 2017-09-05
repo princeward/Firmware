@@ -83,15 +83,20 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/uORB.h>
 
-//#include "solver.h" // cvxgen solver
+extern "C" {
+	void set_defaults(void);
+	void setup_indexing(void);
+	long solve(void);
+}
+#include "solver.h" // cvxgen solver
 
 // cvxgen variables
-//Vars vars;
-//Params params;
-//Workspace work;
-//Settings settings;
-// end - cvxgen_variables
 
+Vars vars;
+Params params;
+Workspace work;
+Settings settings;
+// end - cvxgen_variables
 
 /**
  * Multicopter attitude control app start / stop handling function
@@ -1340,7 +1345,7 @@ MulticopterAttitudeControl::task_main()
 				_att_control = _att_control*(9.81f*1.0f*0.125f);
 
 				// solve optimization here ????????????????????????????????
-				/*
+				
 				set_defaults();
 				setup_indexing();
 
@@ -1369,13 +1374,14 @@ MulticopterAttitudeControl::task_main()
 				settings.resid_tol = 1e-3;
 
 				solve();
-				*/
+				PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
+				
 				//////////////////////
 				//float max_force_per_prop = 2.5f*9.81f*1.0f/4.0f;
-				//_actuators.control[0] = /max_force_per_prop; // Motor 1
-				//_actuators.control[1] = /max_force_per_prop; // Motor 2
-				//_actuators.control[2] = /max_force_per_prop; // Motor 3
-				//_actuators.control[3] = /max_force_per_prop; // Motor 4
+				_actuators.control[0] = 0.0f;// /max_force_per_prop; // Motor 1
+				_actuators.control[1] = 0.0f;// /max_force_per_prop; // Motor 2
+				_actuators.control[2] = 0.0f;// /max_force_per_prop; // Motor 3
+				_actuators.control[3] = 0.0f;// /max_force_per_prop; // Motor 4
 				////////////////////////
 
 				/* publish actuator controls */

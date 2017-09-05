@@ -51,15 +51,16 @@
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_attitude.h>
 
-#include "solver.h"
+//#include "solver.h"
 
-Vars vars;
-Params params;
-Workspace work;
-Settings settings;
+//Vars vars;
+//Params params;
+//Workspace work;
+//Settings settings;
 
 __EXPORT int px4_simple_app_main(int argc, char *argv[]);
 
+/*
 void load_default_data(void) {
 	params.W_row3[0] = -0.54176666;
 	params.W_row3[1] = -0.73584623;
@@ -80,6 +81,7 @@ void load_default_data(void) {
 	params.FMIN[0] = -2.0;
 	params.FMAX[0] = 0.0;
 }
+*/
 
 int px4_simple_app_main(int argc, char *argv[])
 {
@@ -151,6 +153,7 @@ int px4_simple_app_main(int argc, char *argv[])
 				orb_publish(ORB_ID(vehicle_attitude), att_pub, &att);
 				*/
 				
+				/*
 				set_defaults();
 				setup_indexing();
 				load_default_data();
@@ -160,7 +163,7 @@ int px4_simple_app_main(int argc, char *argv[])
 				settings.resid_tol = 1e-3;
 				solve();
 				//PX4_INFO("CVXGEN result: %6.4f, %6.4f, %6.4f, %6.4f\n", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
-
+				*/
 			}
 
 			/* there could be more file descriptors here, in the form like:

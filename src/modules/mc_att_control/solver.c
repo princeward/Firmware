@@ -7,6 +7,7 @@
 /* Filename: solver.c. */
 /* Description: Main solver file. */
 #include "solver.h"
+
 double eval_gap(void) {
   int i;
   double gap;
