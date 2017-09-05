@@ -83,6 +83,16 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/uORB.h>
 
+//#include "solver.h" // cvxgen solver
+
+// cvxgen variables
+//Vars vars;
+//Params params;
+//Workspace work;
+//Settings settings;
+// end - cvxgen_variables
+
+
 /**
  * Multicopter attitude control app start / stop handling function
  *
@@ -1326,11 +1336,55 @@ MulticopterAttitudeControl::task_main()
 			if (_v_control_mode.flag_control_rates_enabled) {
 				control_attitude_rates(dt);
 
+				_thrust_sp = (_thrust_sp/0.5f)*(9.81f*1.0f);
+				_att_control = _att_control*(9.81f*1.0f*0.125f);
+
+				// solve optimization here ????????????????????????????????
+				/*
+				set_defaults();
+				setup_indexing();
+
+				params.W_row3[0] = -0.54176666;
+				params.W_row3[1] = -0.73584623;
+				params.W_row3[2] = -0.5300961;
+				params.W_row3[3] = -0.33601652;
+				params.wdes[0] = -2.4503629212121192;
+				params.wdes[1] = 9.86480390e-04;
+				params.wdes[2] = -1.16191441e-03;
+				params.wdes[3] = 6.15324671e-06;
+				params.W_row2[0] = -0.19991486;
+				params.W_row2[1] = 0.00583528;
+				params.W_row2[2] = 0.19991486;
+				params.W_row2[3] = -0.00583528;
+				params.W_row4[0] = 0.02;
+				params.W_row4[1] = -0.02;
+				params.W_row4[2] = 0.02;
+				params.W_row4[3] = -0.02;
+				params.FMIN[0] = -2.0;
+				params.FMAX[0] = 0.0;
+
+				settings.verbose = 0;
+				settings.max_iters = 10;
+				settings.eps = 1e-3;
+				settings.resid_tol = 1e-3;
+
+				solve();
+				*/
+				//////////////////////
+				//float max_force_per_prop = 2.5f*9.81f*1.0f/4.0f;
+				//_actuators.control[0] = /max_force_per_prop; // Motor 1
+				//_actuators.control[1] = /max_force_per_prop; // Motor 2
+				//_actuators.control[2] = /max_force_per_prop; // Motor 3
+				//_actuators.control[3] = /max_force_per_prop; // Motor 4
+				////////////////////////
+
 				/* publish actuator controls */
+				/*
 				_actuators.control[0] = (PX4_ISFINITE(_att_control(0))) ? _att_control(0) : 0.0f;
 				_actuators.control[1] = (PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
 				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
+				*/
 				_actuators.control[7] = _v_att_sp.landing_gear;
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;

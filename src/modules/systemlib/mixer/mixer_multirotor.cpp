@@ -226,17 +226,24 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 	float		pitch   = math::constrain(get_control(0, 1) * _pitch_scale, -1.0f, 1.0f);
 	float		yaw     = math::constrain(get_control(0, 2) * _yaw_scale, -1.0f, 1.0f);
 	float		thrust  = math::constrain(get_control(0, 3), 0.0f, 1.0f);
-	float		min_out = 1.0f;
-	float		max_out = 0.0f;
+	//float		min_out = 1.0f;
+	//float		max_out = 0.0f;
 
 	// clean out class variable used to capture saturation
 	_saturation_status.value = 0;
 
 	// thrust boost parameters
-	float thrust_increase_factor = 1.5f;
-	float thrust_decrease_factor = 0.6f;
+	//float thrust_increase_factor = 1.5f;
+	//float thrust_decrease_factor = 0.6f;
 
-	/* perform initial mix pass yielding unbounded outputs, ignore yaw */
+	outputs[0] = roll;
+	outputs[1] = pitch;
+	outputs[2] = yaw;
+	outputs[3] = thrust;
+		
+	/*
+	perform initial mix pass yielding unbounded outputs, ignore yaw 
+	
 	for (unsigned i = 0; i < _rotor_count; i++) {
 		float out = roll * _rotors[i].roll_scale +
 			    pitch * _rotors[i].pitch_scale +
@@ -244,7 +251,7 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 
 		out *= _rotors[i].out_scale;
 
-		/* calculate min and max output values */
+		// calculate min and max output values 
 		if (out < min_out) {
 			min_out = out;
 		}
@@ -344,16 +351,17 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 			}
 		}
 	}
+	*/
 
 	// Apply collective thrust reduction, the maximum for one prop
-	thrust -= thrust_reduction;
+	//thrust -= thrust_reduction;
 
 	// add yaw and scale outputs to range idle_speed...1
 	for (unsigned i = 0; i < _rotor_count; i++) {
-		outputs[i] = (roll * _rotors[i].roll_scale +
-			      pitch * _rotors[i].pitch_scale) * roll_pitch_scale +
-			     yaw * _rotors[i].yaw_scale +
-			     thrust + boost;
+		//outputs[i] = (roll * _rotors[i].roll_scale +
+		//	      pitch * _rotors[i].pitch_scale) * roll_pitch_scale +
+		//	     yaw * _rotors[i].yaw_scale +
+		//	     thrust + boost;
 
 		/*
 			implement simple model for static relationship between applied motor pwm and motor thrust
