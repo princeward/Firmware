@@ -140,6 +140,8 @@ public:
 
 private:
 
+	int _counter_cvxgen;            /**< controls how frequently cvxgen solves a problem */
+
 	bool	_task_should_exit;		/**< if true, task_main() should exit */
 	int		_control_task;			/**< task handle */
 
@@ -405,7 +407,7 @@ MulticopterAttitudeControl	*g_control;
 }
 
 MulticopterAttitudeControl::MulticopterAttitudeControl() :
-
+	_counter_cvxgen(0),
 	_task_should_exit(false),
 	_control_task(-1),
 
@@ -1345,36 +1347,40 @@ MulticopterAttitudeControl::task_main()
 				_att_control = _att_control*(9.81f*1.0f*0.125f);
 
 				// solve optimization here ????????????????????????????????
-				
-				set_defaults();
-				setup_indexing();
+				_counter_cvxgen++;
+				if(_counter_cvxgen == 5) {
+					_counter_cvxgen = 0;
+					
+					set_defaults();
+					setup_indexing();
 
-				params.W_row3[0] = -0.54176666;
-				params.W_row3[1] = -0.73584623;
-				params.W_row3[2] = -0.5300961;
-				params.W_row3[3] = -0.33601652;
-				params.wdes[0] = -2.4503629212121192;
-				params.wdes[1] = 9.86480390e-04;
-				params.wdes[2] = -1.16191441e-03;
-				params.wdes[3] = 6.15324671e-06;
-				params.W_row2[0] = -0.19991486;
-				params.W_row2[1] = 0.00583528;
-				params.W_row2[2] = 0.19991486;
-				params.W_row2[3] = -0.00583528;
-				params.W_row4[0] = 0.02;
-				params.W_row4[1] = -0.02;
-				params.W_row4[2] = 0.02;
-				params.W_row4[3] = -0.02;
-				params.FMIN[0] = -2.0;
-				params.FMAX[0] = 0.0;
+					params.W_row3[0] = -0.54176666;
+					params.W_row3[1] = -0.73584623;
+					params.W_row3[2] = -0.5300961;
+					params.W_row3[3] = -0.33601652;
+					params.wdes[0] = -2.4503629212121192;
+					params.wdes[1] = 9.86480390e-04;
+					params.wdes[2] = -1.16191441e-03;
+					params.wdes[3] = 6.15324671e-06;
+					params.W_row2[0] = -0.19991486;
+					params.W_row2[1] = 0.00583528;
+					params.W_row2[2] = 0.19991486;
+					params.W_row2[3] = -0.00583528;
+					params.W_row4[0] = 0.02;
+					params.W_row4[1] = -0.02;
+					params.W_row4[2] = 0.02;
+					params.W_row4[3] = -0.02;
+					params.FMIN[0] = -2.0;
+					params.FMAX[0] = 0.0;
 
-				settings.verbose = 0;
-				settings.max_iters = 10;
-				settings.eps = 1e-3;
-				settings.resid_tol = 1e-3;
+					settings.verbose = 0;
+					settings.max_iters = 10;
+					settings.eps = 1e-3;
+					settings.resid_tol = 1e-3;
 
-				solve();
-				PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
+					solve();
+					PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
+				}
 				
 				//////////////////////
 				//float max_force_per_prop = 2.5f*9.81f*1.0f/4.0f;
