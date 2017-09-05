@@ -2046,10 +2046,10 @@ Mavlink::task_main(int argc, char *argv[])
 		configure_stream("GLOBAL_POSITION_INT", 0.0f);
 		configure_stream("LOCAL_POSITION_NED", -1.0f);
 		configure_stream("POSITION_TARGET_GLOBAL_INT", 0.0f);
-		configure_stream("ATTITUDE_TARGET", 0.0f);
+		configure_stream("ATTITUDE_TARGET", 1.0f);
 		configure_stream("HOME_POSITION", 0.5f);
 		configure_stream("NAMED_VALUE_FLOAT", 0.0f);
-		configure_stream("VFR_HUD", 0.0f);
+		configure_stream("VFR_HUD", 1.0f);
 		configure_stream("WIND_COV", 0.0f);
 		configure_stream("POSITION_TARGET_LOCAL_NED", 0.0f);
 		configure_stream("SYSTEM_TIME", 1.0f);
@@ -2057,7 +2057,7 @@ Mavlink::task_main(int argc, char *argv[])
 		configure_stream("CAMERA_CAPTURE", 0.0f);
 		configure_stream("CAMERA_TRIGGER");
 		configure_stream("CAMERA_IMAGE_CAPTURED");
-		configure_stream("ACTUATOR_CONTROL_TARGET0", 0.0f);
+		configure_stream("ACTUATOR_CONTROL_TARGET0", 1.0f);
 		break;
 
 	case MAVLINK_MODE_OSD:

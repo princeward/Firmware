@@ -1137,6 +1137,31 @@ MulticopterAttitudeControl::task_main_trampoline(int argc, char *argv[])
 void
 MulticopterAttitudeControl::task_main()
 {
+	/*
+	 * cvxgen setup
+	 */ 
+	set_defaults();
+	setup_indexing();
+
+	params.W_row2[0] = -0.12;
+	params.W_row2[1] = 0.12;
+	params.W_row2[2] = 0.12;
+	params.W_row2[3] = -0.12;
+	params.W_row3[0] = 0.63;
+	params.W_row3[1] = 0.39;
+	params.W_row3[2] = 0.63;
+	params.W_row3[3] = 0.39;
+	params.W_row4[0] = 0.05;
+	params.W_row4[1] = 0.05;
+	params.W_row4[2] = -0.05;
+	params.W_row4[3] = -0.05;
+	params.FMIN[0] = 0.0;
+	params.FMAX[0] = 2.5 * 9.81 / 4.0;
+
+	settings.verbose = 0;
+	settings.max_iters = 10;
+	settings.eps = 1e-3;
+	settings.resid_tol = 1e-3;
 
 	/*
 	 * do subscriptions
@@ -1173,6 +1198,7 @@ MulticopterAttitudeControl::task_main()
 
 	// initialize
 	float _thrust_sp_prev = _params.thr_hover;
+	double max_force_per_prop = 2.5 * 9.81 / 4.0;
 
 	while (!_task_should_exit) {
 
@@ -1341,54 +1367,48 @@ MulticopterAttitudeControl::task_main()
 			}
 
 			if (_v_control_mode.flag_control_rates_enabled) {
-				control_attitude_rates(dt);
+				if (_armed.armed){
+					_counter_cvxgen++;
+					if(_counter_cvxgen == 3) {
+						_counter_cvxgen = 0;
 
-				_thrust_sp = (_thrust_sp/0.5f)*(9.81f*1.0f);
-				_att_control = _att_control*(9.81f*1.0f*0.125f);
+						control_attitude_rates(dt);
 
-				// solve optimization here ????????????????????????????????
-				_counter_cvxgen++;
-				if(_counter_cvxgen == 5) {
-					_counter_cvxgen = 0;
+						_thrust_sp = math::constrain(_thrust_sp, 0.0f, 1.0f);
+						_thrust_sp_prev = _thrust_sp;
+
+						_thrust_sp = (_thrust_sp/0.5f)*(9.81f*5.0f);
+						_att_control = (_att_control)*(9.81f*5.0f*0.12f);
+
+						// solve optimization here
+						params.wdes[0] = (double)_thrust_sp/4.0; // desired fz
+						params.wdes[1] = (double)_att_control(0)/4.0;  // desired tau_x
+						params.wdes[2] = (double)_att_control(1)/4.0;  // desired tau_y
+						params.wdes[3] = (double)_att_control(2)/4.0;  // desired tau_z
+						
+						solve();
+						// PX4_INFO("des = %5.3f, %5.3f, %5.3f, %5.3f", (double)_thrust_sp , (double)_att_control(0), (double)_att_control(1), (double)_att_control(2));
+						// PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
+						_actuators.control[0] = math::constrain((double) vars.f[0] / max_force_per_prop, 0.02, 1.0); // Motor 1
+						_actuators.control[1] = math::constrain((double) vars.f[1] / max_force_per_prop, 0.02, 1.0); // Motor 2
+						_actuators.control[2] = math::constrain((double) vars.f[2] / max_force_per_prop, 0.02, 1.0); // Motor 3
+						_actuators.control[3] = math::constrain((double) vars.f[3] / max_force_per_prop, 0.02, 1.0); // Motor 4
+					} else {
+						_thrust_sp = _thrust_sp_prev;
+						// Retain last solution
+						_actuators.control[0] = math::constrain((double) vars.f[0] / max_force_per_prop, 0.02, 1.0); // Motor 1
+						_actuators.control[1] = math::constrain((double) vars.f[1] / max_force_per_prop, 0.02, 1.0); // Motor 2
+						_actuators.control[2] = math::constrain((double) vars.f[2] / max_force_per_prop, 0.02, 1.0); // Motor 3
+						_actuators.control[3] = math::constrain((double) vars.f[3] / max_force_per_prop, 0.02, 1.0); // Motor 4
+					}
+				} else {					
 					
-					set_defaults();
-					setup_indexing();
-
-					params.W_row3[0] = -0.54176666;
-					params.W_row3[1] = -0.73584623;
-					params.W_row3[2] = -0.5300961;
-					params.W_row3[3] = -0.33601652;
-					params.wdes[0] = -2.4503629212121192;
-					params.wdes[1] = 9.86480390e-04;
-					params.wdes[2] = -1.16191441e-03;
-					params.wdes[3] = 6.15324671e-06;
-					params.W_row2[0] = -0.19991486;
-					params.W_row2[1] = 0.00583528;
-					params.W_row2[2] = 0.19991486;
-					params.W_row2[3] = -0.00583528;
-					params.W_row4[0] = 0.02;
-					params.W_row4[1] = -0.02;
-					params.W_row4[2] = 0.02;
-					params.W_row4[3] = -0.02;
-					params.FMIN[0] = -2.0;
-					params.FMAX[0] = 0.0;
-
-					settings.verbose = 0;
-					settings.max_iters = 10;
-					settings.eps = 1e-3;
-					settings.resid_tol = 1e-3;
-
-					solve();
-					PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
+					_actuators.control[0] = 0.01f; // Motor 1
+					_actuators.control[1] = 0.01f; // Motor 2
+					_actuators.control[2] = 0.01f; // Motor 3
+					_actuators.control[3] = 0.01f; // Motor 4
 				}
 				
-				//////////////////////
-				//float max_force_per_prop = 2.5f*9.81f*1.0f/4.0f;
-				_actuators.control[0] = 0.0f;// /max_force_per_prop; // Motor 1
-				_actuators.control[1] = 0.0f;// /max_force_per_prop; // Motor 2
-				_actuators.control[2] = 0.0f;// /max_force_per_prop; // Motor 3
-				_actuators.control[3] = 0.0f;// /max_force_per_prop; // Motor 4
-				////////////////////////
 
 				/* publish actuator controls */
 				/*
@@ -1407,12 +1427,6 @@ MulticopterAttitudeControl::task_main()
 						_actuators.control[i] *= _battery_status.scale;
 					}
 				}
-
-				for (int i=0; i<4; i++) {
-					_actuators.control[i] /= 4.0f;
-				}
-
-				_thrust_sp_prev = _actuators.control[3];
 
 				_controller_status.roll_rate_integ = _rates_int(0);
 				_controller_status.pitch_rate_integ = _rates_int(1);

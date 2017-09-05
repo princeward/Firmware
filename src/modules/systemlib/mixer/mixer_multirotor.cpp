@@ -222,9 +222,9 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 	4) scale all outputs to range [idle_speed,1]
 	*/
 
-	float		roll    = math::constrain(get_control(0, 0) * _roll_scale, -1.0f, 1.0f);
-	float		pitch   = math::constrain(get_control(0, 1) * _pitch_scale, -1.0f, 1.0f);
-	float		yaw     = math::constrain(get_control(0, 2) * _yaw_scale, -1.0f, 1.0f);
+	float		roll    = math::constrain(get_control(0, 0), -1.0f, 1.0f);
+	float		pitch   = math::constrain(get_control(0, 1), -1.0f, 1.0f);
+	float		yaw     = math::constrain(get_control(0, 2), -1.0f, 1.0f);
 	float		thrust  = math::constrain(get_control(0, 3), 0.0f, 1.0f);
 	//float		min_out = 1.0f;
 	//float		max_out = 0.0f;
