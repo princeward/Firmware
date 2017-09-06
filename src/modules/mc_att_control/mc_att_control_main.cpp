@@ -1198,7 +1198,6 @@ MulticopterAttitudeControl::task_main()
 
 	// initialize
 	float _thrust_sp_prev = _params.thr_hover;
-	double max_force_per_prop = 2.5 * 9.81 / 4.0;
 	math::Vector<3> torque_char(4.5f*9.81f*0.12f, 4.5f*9.81f*0.51f, 4.5f*9.81f*0.05f);
 
 	while (!_task_should_exit) {
@@ -1368,52 +1367,13 @@ MulticopterAttitudeControl::task_main()
 			}
 
 			if (_v_control_mode.flag_control_rates_enabled) {
-				_counter_cvxgen++;
-				if(_counter_cvxgen == 3) {
-					_counter_cvxgen = 0;
-
-					control_attitude_rates(dt);
-					// _att_control(0) = 0.0f;
-					// _att_control(1) = 0.4f;
-					// _att_control(2) = 0.0f;
-					// _thrust_sp = 0.1f;
-
-					_thrust_sp = math::constrain(_thrust_sp, 0.0f, 1.0f);
-					_thrust_sp_prev = _thrust_sp;
-
-					_thrust_sp = (_thrust_sp/_params.thr_hover)*(9.81f*4.5f);
-					_att_control = _att_control.emult(torque_char);
-
-					// solve optimization here
-					params.wdes[0] = (double)_thrust_sp/4.0; // desired fz
-					params.wdes[1] = (double)_att_control(0)/4.0;  // desired tau_x
-					params.wdes[2] = (double)_att_control(1)/4.0;  // desired tau_y
-					params.wdes[3] = (double)_att_control(2)/4.0;  // desired tau_z
-					
-					solve();
-					// PX4_INFO("des = %5.3f, %5.3f, %5.3f, %5.3f", (double)_thrust_sp , (double)_att_control(0), (double)_att_control(1), (double)_att_control(2));
-					//PX4_INFO("f = %5.3f, %5.3f, %5.3f, %5.3f", vars.f[0], vars.f[1], vars.f[2], vars.f[3]);
-					_actuators.control[0] = math::constrain((double) vars.f[0] / max_force_per_prop, 0.02, 1.0); // Motor 1
-					_actuators.control[1] = math::constrain((double) vars.f[1] / max_force_per_prop, 0.02, 1.0); // Motor 2
-					_actuators.control[2] = math::constrain((double) vars.f[2] / max_force_per_prop, 0.02, 1.0); // Motor 3
-					_actuators.control[3] = math::constrain((double) vars.f[3] / max_force_per_prop, 0.02, 1.0); // Motor 4
-				} else {
-					_thrust_sp = _thrust_sp_prev;
-					// Retain last solution
-					_actuators.control[0] = math::constrain((double) vars.f[0] / max_force_per_prop, 0.02, 1.0); // Motor 1
-					_actuators.control[1] = math::constrain((double) vars.f[1] / max_force_per_prop, 0.02, 1.0); // Motor 2
-					_actuators.control[2] = math::constrain((double) vars.f[2] / max_force_per_prop, 0.02, 1.0); // Motor 3
-					_actuators.control[3] = math::constrain((double) vars.f[3] / max_force_per_prop, 0.02, 1.0); // Motor 4
-				}
-				
+				control_attitude_rates(dt);
 
 				/* publish actuator controls */
-				/*
 				_actuators.control[0] = (PX4_ISFINITE(_att_control(0))) ? _att_control(0) : 0.0f;
 				_actuators.control[1] = (PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
 				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
-				*/
 				_actuators.control[7] = _v_att_sp.landing_gear;
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;

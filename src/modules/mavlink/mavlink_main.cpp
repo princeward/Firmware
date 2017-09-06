@@ -2057,7 +2057,7 @@ Mavlink::task_main(int argc, char *argv[])
 		configure_stream("CAMERA_CAPTURE", 0.0f);
 		configure_stream("CAMERA_TRIGGER");
 		configure_stream("CAMERA_IMAGE_CAPTURED");
-		configure_stream("ACTUATOR_CONTROL_TARGET0", 1.0f);
+		configure_stream("ACTUATOR_CONTROL_TARGET0", -1.0f);
 		break;
 
 	case MAVLINK_MODE_OSD:
