@@ -863,7 +863,7 @@ PARAM_DEFINE_FLOAT(EKF2_EV_POS_Z, 0.0f);
 * @group EKF2
 * @min 0.0
 * @unit m/s
-* @decimal 1
+* @decimal 4
 */
 PARAM_DEFINE_FLOAT(EKF2_ARSP_THR, 0.0f);
 

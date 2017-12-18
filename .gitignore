@@ -82,3 +82,4 @@ cppcheck-result.xml
 cppcheck
 
 scan-build
+.vscode

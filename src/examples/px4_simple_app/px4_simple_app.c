@@ -50,6 +50,7 @@
 #include <uORB/uORB.h>
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/airspeed.h>
 
 __EXPORT int px4_simple_app_main(int argc, char *argv[]);
 
@@ -66,6 +67,11 @@ int px4_simple_app_main(int argc, char *argv[])
 	struct vehicle_attitude_s att;
 	memset(&att, 0, sizeof(att));
 	orb_advert_t att_pub = orb_advertise(ORB_ID(vehicle_attitude), &att);
+
+	// advertise airspeed topic
+	struct airspeed_s airspd;
+	memset(&airspd, 0, sizeof(airspd));
+	orb_advert_t airspeed_pub = orb_advertise(ORB_ID(airspeed), &airspd);
 
 	/* one could wait for multiple topics with this technique, just using one here */
 	px4_pollfd_struct_t fds[] = {
@@ -121,6 +127,18 @@ int px4_simple_app_main(int argc, char *argv[])
 			 * if (fds[1..n].revents & POLLIN) {}
 			 */
 		}
+	}
+
+	for(int i=0; i<10; i++) {
+		airspd.true_airspeed_m_s = 10.0;
+		airspd.indicated_airspeed_m_s = 10.0;
+		airspd.true_airspeed_unfiltered_m_s = 10.0;
+		airspd.air_temperature_celsius = -1000.0;
+		airspd.confidence = 1.0;
+
+		orb_publish(ORB_ID(airspeed), airspeed_pub, &airspd);
+		PX4_INFO("hello");
+		sleep(1);
 	}
 
 	PX4_INFO("exiting");
