@@ -77,6 +77,8 @@ MS5525::encoder_read()
 		for(int i=0; i<4; i++)
 			checksum += val[i];
 		if(val[4] == checksum) {
+			hrt_abstime t = hrt_absolute_time();
+			airspd.timestamp = t;
 			airspd.true_airspeed_m_s = fu.f;
 			airspd.indicated_airspeed_m_s = fu.f;
 			airspd.true_airspeed_unfiltered_m_s = fu.f;
